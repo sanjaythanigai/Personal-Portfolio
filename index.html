@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sanjay T — Cloud Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0A0E14;
+    --panel: #10151D;
+    --panel-2: #131A24;
+    --border: #212938;
+    --border-soft: #1A212D;
+    --text: #E7ECF3;
+    --muted: #8A96AA;
+    --muted-dim: #5C6678;
+    --aws: #FF9E2C;
+    --aws-dim: #7A5326;
+    --azure: #3E9BFF;
+    --azure-dim: #274566;
+    --accent-line: #2A3448;
+    --radius: 3px;
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+  html{ scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior: auto; }
+    *{ animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+  }
+
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: "IBM Plex Sans", sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+  }
+
+  /* ambient moving grid */
+  body::before{
+    content: "";
+    position: fixed;
+    inset: -200px;
+    background-image:
+      linear-gradient(var(--border-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border-soft) 1px, transparent 1px);
+    background-size: 64px 64px;
+    opacity: 0.35;
+    animation: grid-drift 40s linear infinite;
+    z-index: 0;
+    pointer-events: none;
+  }
+  @keyframes grid-drift{
+    0%{ transform: translate(0,0); }
+    100%{ transform: translate(64px, 64px); }
+  }
+
+  .mono{ font-family: "IBM Plex Mono", monospace; }
+  a{ color: inherit; text-decoration: none; }
+  a:focus-visible, button:focus-visible{ outline: 2px solid var(--azure); outline-offset: 3px; }
+
+  .wrap{ max-width: 980px; margin: 0 auto; padding: 0 28px; position: relative; z-index: 1; }
+
+  /* ---------- SCROLL PROGRESS ---------- */
+  .scroll-progress{
+    position: fixed;
+    top: 0; left: 0;
+    height: 2px;
+    width: 0%;
+    background: linear-gradient(90deg, var(--azure), var(--aws));
+    z-index: 100;
+    transition: width 0.08s linear;
+  }
+
+  /* ---------- NAV ---------- */
+  header.nav{
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(10,14,20,0.86);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .nav-inner{
+    max-width: 980px; margin: 0 auto; padding: 16px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-id{ font-family: "IBM Plex Mono", monospace; font-size: 14px; letter-spacing: 0.02em; }
+  .nav-id span{ color: var(--muted-dim); }
+  .nav-links{ display: none; gap: 24px; font-size: 13.5px; color: var(--muted); }
+  @media (min-width: 640px){ .nav-links{ display: flex; } }
+  .nav-links a{
+    position: relative;
+    padding-bottom: 3px;
+    transition: color 0.2s ease;
+  }
+  .nav-links a::after{
+    content: "";
+    position: absolute;
+    left: 0; bottom: 0;
+    width: 0%; height: 1px;
+    background: var(--azure);
+    transition: width 0.25s ease;
+  }
+  .nav-links a:hover{ color: var(--text); }
+  .nav-links a:hover::after{ width: 100%; }
+  .nav-links a.active{ color: var(--text); }
+  .nav-links a.active::after{ width: 100%; background: var(--aws); }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position: relative;
+    padding: 88px 0 64px;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .hero-glow{
+    position: absolute;
+    top: -160px; right: -160px;
+    width: 520px; height: 520px;
+    background: radial-gradient(circle, rgba(62,155,255,0.16) 0%, rgba(62,155,255,0) 70%);
+    filter: blur(10px);
+    animation: glow-pulse 6s ease-in-out infinite;
+    z-index: 0;
+  }
+  @keyframes glow-pulse{
+    0%, 100%{ transform: scale(1); opacity: 0.9; }
+    50%{ transform: scale(1.15); opacity: 0.55; }
+  }
+  .hero-diagram{
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    opacity: 0.6; pointer-events: none; z-index: 0;
+  }
+  .hero-diagram .line{
+    stroke-dasharray: 400;
+    stroke-dashoffset: 400;
+    animation: draw-line 2.2s ease forwards;
+  }
+  @keyframes draw-line{ to{ stroke-dashoffset: 0; } }
+  .hero-content{ position: relative; z-index: 2; }
+
+  .eyebrow-line{
+    display: flex; align-items: center; gap: 10px;
+    font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--muted);
+    margin-bottom: 22px;
+    opacity: 0; animation: fade-up 0.6s ease forwards; animation-delay: 0.1s;
+  }
+  .eyebrow-line .dot{
+    width: 6px; height: 6px; border-radius: 50%; background: var(--azure);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:0.35; } }
+  @keyframes fade-up{
+    from{ opacity: 0; transform: translateY(10px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+
+  h1.title{
+    font-size: clamp(38px, 6.4vw, 60px);
+    font-weight: 700; letter-spacing: -0.02em; line-height: 1.05; max-width: 11ch;
+    opacity: 0; animation: fade-up 0.7s ease forwards; animation-delay: 0.22s;
+  }
+
+  .role-line{
+    margin-top: 16px; font-size: clamp(16px, 2.4vw, 19px); color: var(--muted);
+    max-width: 46ch; min-height: 1.6em;
+    opacity: 0; animation: fade-up 0.7s ease forwards; animation-delay: 0.4s;
+  }
+  .role-line .aws{ color: var(--aws); }
+  .role-line .azure{ color: var(--azure); }
+  .type-cursor{
+    display: inline-block; width: 2px; height: 1em; background: var(--azure);
+    margin-left: 2px; vertical-align: -2px;
+    animation: blink 0.9s step-end infinite;
+  }
+  @keyframes blink{ 0%,100%{ opacity:1; } 50%{ opacity:0; } }
+
+  .contact-row{
+    margin-top: 34px; display: flex; flex-wrap: wrap; gap: 10px 22px;
+    font-family: "IBM Plex Mono", monospace; font-size: 13px; color: var(--muted);
+    opacity: 0; animation: fade-up 0.7s ease forwards; animation-delay: 0.56s;
+  }
+  .contact-row a{ position: relative; }
+  .contact-row a::after{
+    content: ""; position: absolute; left: 0; bottom: -2px; width: 0%; height: 1px;
+    background: var(--text); transition: width 0.2s ease;
+  }
+  .contact-row a:hover{ color: var(--text); }
+  .contact-row a:hover::after{ width: 100%; }
+  .contact-row .sep{ color: var(--muted-dim); }
+
+  .stat-strip{
+    margin-top: 52px; display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1px; background: var(--border-soft); border: 1px solid var(--border-soft);
+    opacity: 0; animation: fade-up 0.7s ease forwards; animation-delay: 0.7s;
+  }
+  @media (min-width: 640px){ .stat-strip{ grid-template-columns: repeat(4, 1fr); } }
+  .stat{
+    background: var(--panel); padding: 18px 20px;
+    transition: background 0.25s ease;
+  }
+  .stat:hover{ background: var(--panel-2); }
+  .stat-num{ font-family: "IBM Plex Mono", monospace; font-size: 24px; font-weight: 600; color: var(--text); }
+  .stat-label{ margin-top: 4px; font-size: 12.5px; color: var(--muted); }
+
+  .scroll-cue{
+    position: absolute; bottom: 18px; left: 28px; z-index: 2;
+    display: flex; align-items: center; gap: 8px;
+    font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--muted-dim);
+  }
+  .scroll-cue .arrow{ animation: bob 1.8s ease-in-out infinite; }
+  @keyframes bob{ 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(5px); } }
+
+  /* ---------- SECTION SCAFFOLD + REVEAL ---------- */
+  section{ padding: 64px 0; border-bottom: 1px solid var(--border-soft); position: relative; z-index: 1; }
+  section:last-of-type{ border-bottom: none; }
+
+  .reveal{ opacity: 0; transform: translateY(22px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .reveal.in-view{ opacity: 1; transform: translateY(0); }
+  .reveal-stagger > *{ opacity: 0; transform: translateY(16px); transition: opacity 0.5s ease, transform 0.5s ease; }
+  .reveal-stagger.in-view > *{ opacity: 1; transform: translateY(0); }
+
+  .section-head{
+    display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 32px;
+  }
+  .section-head h2{ font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  .section-index{ font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--muted-dim); }
+  p.lede{ max-width: 68ch; color: var(--muted); font-size: 15.5px; }
+
+  /* ---------- CERTS ---------- */
+  .cert-grid{ display: grid; grid-template-columns: 1fr; gap: 1px; background: var(--border-soft); border: 1px solid var(--border-soft); }
+  @media (min-width: 640px){ .cert-grid{ grid-template-columns: repeat(2, 1fr); } }
+  .cert{
+    background: var(--panel); padding: 18px 20px; border-left: 2px solid var(--accent-line);
+    display: flex; flex-direction: column; gap: 4px;
+    transition: background 0.25s ease, border-left-color 0.25s ease, transform 0.25s ease;
+  }
+  .cert:hover{ background: var(--panel-2); transform: translateX(3px); }
+  .cert.c-aws{ border-left-color: var(--aws); }
+  .cert.c-azure{ border-left-color: var(--azure); }
+  .cert-name{ font-size: 14.5px; font-weight: 500; }
+  .cert-issuer{ font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--muted); }
+
+  /* ---------- SKILLS ---------- */
+  .skill-block{ margin-bottom: 28px; }
+  .skill-block:last-child{ margin-bottom: 0; }
+  .skill-cat{
+    font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--muted); margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .skill-cat .rule{ flex: 1; height: 1px; background: var(--border-soft); }
+  .chip-row{ display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip{
+    font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--text);
+    background: var(--panel); border: 1px solid var(--border); padding: 5px 10px; border-radius: var(--radius);
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  }
+  .chip:hover{
+    transform: translateY(-2px);
+    border-color: var(--azure);
+    box-shadow: 0 4px 14px rgba(62,155,255,0.15);
+  }
+
+  /* ---------- EXPERIENCE TIMELINE ---------- */
+  .timeline{ position: relative; padding-left: 28px; }
+  .timeline::before{
+    content: ""; position: absolute; left: 5px; top: 6px; bottom: 6px; width: 1px; background: var(--border);
+  }
+  .timeline-fill{
+    position: absolute; left: 5px; top: 6px; width: 1px; height: 0%;
+    background: linear-gradient(180deg, var(--azure), var(--aws));
+    transition: height 0.4s ease-out;
+  }
+  .job{ position: relative; margin-bottom: 44px; }
+  .job:last-child{ margin-bottom: 0; }
+  .job::before{
+    content: ""; position: absolute; left: -28px; top: 5px; width: 11px; height: 11px;
+    border-radius: 50%; background: var(--bg); border: 2px solid var(--azure);
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  }
+  .job.in-view::before{
+    border-color: var(--aws);
+    box-shadow: 0 0 0 5px rgba(255,158,44,0.15);
+  }
+  .job-head{ display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+  .job-role{ font-size: 17px; font-weight: 600; }
+  .job-period{ font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--muted-dim); }
+  .job-org{ font-size: 14px; color: var(--muted); margin-bottom: 14px; }
+  .job ul{ list-style: none; display: flex; flex-direction: column; gap: 9px; }
+  .job li{ font-size: 14.5px; color: var(--text); padding-left: 16px; position: relative; }
+  .job li::before{ content: "—"; position: absolute; left: 0; color: var(--muted-dim); }
+
+  /* ---------- PROJECTS ---------- */
+  .project-grid{ display: grid; grid-template-columns: 1fr; gap: 16px; }
+  @media (min-width: 720px){ .project-grid{ grid-template-columns: 1fr 1fr; } }
+  .project{
+    background: var(--panel); border: 1px solid var(--border); padding: 22px;
+    display: flex; flex-direction: column; gap: 12px;
+    transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+  }
+  .project:hover{
+    transform: translateY(-4px);
+    border-color: var(--azure-dim);
+    box-shadow: 0 14px 30px rgba(0,0,0,0.35), 0 0 0 1px rgba(62,155,255,0.15);
+  }
+  .project-title{ font-size: 15.5px; font-weight: 600; }
+  .stack-row{ font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: var(--muted); line-height: 1.7; }
+  .stack-row .divider{ color: var(--muted-dim); margin: 0 6px; }
+  .project ul{ list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .project li{ font-size: 13.5px; color: var(--muted); padding-left: 14px; position: relative; }
+  .project li::before{ content: ""; position: absolute; left: 0; top: 7px; width: 4px; height: 4px; background: var(--muted-dim); }
+
+  /* ---------- EDUCATION / ACHIEVEMENTS ---------- */
+  .edu-row{ display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 16px 0; border-bottom: 1px solid var(--border-soft); }
+  .edu-row:last-child{ border-bottom: none; }
+  .edu-name{ font-size: 15px; font-weight: 500; }
+  .edu-sub{ font-size: 13.5px; color: var(--muted); }
+  .edu-period{ font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--muted-dim); }
+
+  .ach-list{ display: flex; flex-direction: column; }
+  .ach-item{
+    display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border-soft); font-size: 14.5px;
+    transition: padding-left 0.2s ease;
+  }
+  .ach-item:hover{ padding-left: 6px; }
+  .ach-item:last-child{ border-bottom: none; }
+  .ach-item .mk{ color: var(--aws); font-family: "IBM Plex Mono", monospace; flex-shrink: 0; }
+
+  /* ---------- FOOTER ---------- */
+  footer{ padding: 56px 0 72px; text-align: left; }
+  .footer-cta{ font-size: clamp(24px, 4vw, 32px); font-weight: 700; letter-spacing: -0.01em; max-width: 16ch; margin-bottom: 22px; }
+  .footer-links{ display: flex; flex-wrap: wrap; gap: 10px 24px; font-family: "IBM Plex Mono", monospace; font-size: 13.5px; }
+  .footer-links a{ color: var(--azure); border-bottom: 1px solid transparent; transition: border-color 0.2s ease, color 0.2s ease; }
+  .footer-links a:hover{ border-bottom-color: var(--azure); }
+  .footer-meta{ margin-top: 36px; font-size: 12px; color: var(--muted-dim); font-family: "IBM Plex Mono", monospace; }
+</style>
+</head>
+<body>
+
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div class="nav-id">sanjay<span>@</span>cloud<span>:</span>~<span>$</span></div>
+    <nav class="nav-links">
+      <a href="#experience" data-section="experience">Experience</a>
+      <a href="#projects" data-section="projects">Projects</a>
+      <a href="#skills" data-section="skills">Skills</a>
+      <a href="#contact" data-section="contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-glow"></div>
+  <svg class="hero-diagram" viewBox="0 0 980 420" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <line class="line" x1="720" y1="70" x2="880" y2="40" stroke="#212938" stroke-width="1"/>
+    <line class="line" x1="720" y1="70" x2="900" y2="150" stroke="#212938" stroke-width="1" style="animation-delay:0.15s"/>
+    <line class="line" x1="720" y1="70" x2="800" y2="230" stroke="#212938" stroke-width="1" style="animation-delay:0.3s"/>
+    <line class="line" x1="720" y1="70" x2="640" y2="250" stroke="#212938" stroke-width="1" style="animation-delay:0.45s"/>
+    <line class="line" x1="720" y1="70" x2="560" y2="130" stroke="#212938" stroke-width="1" style="animation-delay:0.6s"/>
+    <line class="line" x1="880" y1="40" x2="900" y2="150" stroke="#1A212D" stroke-width="1" style="animation-delay:0.75s"/>
+    <line class="line" x1="900" y1="150" x2="800" y2="230" stroke="#1A212D" stroke-width="1" style="animation-delay:0.9s"/>
+    <circle cx="720" cy="70" r="5" fill="#3E9BFF"/>
+    <circle cx="880" cy="40" r="3.5" fill="#FF9E2C"/>
+    <circle cx="900" cy="150" r="3.5" fill="#3E9BFF">
+      <animate attributeName="opacity" values="1;0.3;1" dur="3.2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="800" cy="230" r="3.5" fill="#FF9E2C">
+      <animate attributeName="opacity" values="0.4;1;0.4" dur="2.6s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="640" cy="250" r="3.5" fill="#3E9BFF"/>
+    <circle cx="560" cy="130" r="3.5" fill="#FF9E2C">
+      <animate attributeName="opacity" values="1;0.35;1" dur="4s" repeatCount="indefinite"/>
+    </circle>
+  </svg>
+
+  <div class="wrap hero-content">
+    <div class="eyebrow-line"><span class="dot"></span>Chennai, Tamil Nadu — available for cloud engineering roles</div>
+    <h1 class="title">Sanjay T</h1>
+    <p class="role-line" id="roleLine"></p>
+
+    <div class="contact-row">
+      <a href="tel:+917539988018">+91 75399 88018</a>
+      <span class="sep">/</span>
+      <a href="mailto:sanjaythanigai12@gmail.com">sanjaythanigai12@gmail.com</a>
+      <span class="sep">/</span>
+      <a href="https://linkedin.com/in/sanjay-thanigai" target="_blank" rel="noopener">linkedin.com/in/sanjay-thanigai</a>
+      <span class="sep">/</span>
+      <a href="#" target="_blank" rel="noopener">github</a>
+    </div>
+
+    <div class="stat-strip">
+      <div class="stat"><div class="stat-num" data-target="2" data-suffix="+ yrs">0</div><div class="stat-label">Cloud engineering experience</div></div>
+      <div class="stat"><div class="stat-num" data-target="15" data-suffix="+">0</div><div class="stat-label">AWS customer accounts managed</div></div>
+      <div class="stat"><div class="stat-num" data-target="99" data-suffix="%+">0</div><div class="stat-label">Uptime maintained</div></div>
+      <div class="stat"><div class="stat-num" data-target="5" data-suffix="">0</div><div class="stat-label">Cloud & infra certifications</div></div>
+    </div>
+  </div>
+
+  <div class="scroll-cue"><span class="arrow">↓</span> scroll</div>
+</section>
+
+<section id="about">
+  <div class="wrap reveal">
+    <div class="section-head"><h2>Summary</h2><span class="section-index mono">01</span></div>
+    <p class="lede">
+      Cloud engineer with two-plus years designing, deploying, and operating AWS and Azure environments for customer workloads — spanning cloud architecture, enterprise networking, application deployment, security, FinOps, monitoring, automation, migration, and disaster recovery. Managed infrastructure across 15+ AWS customer accounts with direct production ownership and customer-facing delivery, with measurable gains in automation, monitoring, and operational efficiency.
+    </p>
+  </div>
+</section>
+
+<section id="certifications">
+  <div class="wrap">
+    <div class="section-head reveal"><h2>Certifications</h2><span class="section-index mono">02</span></div>
+    <div class="cert-grid reveal-stagger">
+      <div class="cert c-azure"><div class="cert-name">Azure Network Engineer Associate</div><div class="cert-issuer">Microsoft Certified · AZ-700</div></div>
+      <div class="cert c-aws"><div class="cert-name">AWS Certified Solutions Architect — Associate</div><div class="cert-issuer">Amazon Web Services · SAA-C03</div></div>
+      <div class="cert c-aws"><div class="cert-name">AWS Certified AI Practitioner</div><div class="cert-issuer">Amazon Web Services · AIF-C01</div></div>
+      <div class="cert c-aws"><div class="cert-name">AWS Certified Cloud Practitioner</div><div class="cert-issuer">Amazon Web Services · CLF-C02</div></div>
+      <div class="cert"><div class="cert-name">Linux Administration Certification</div><div class="cert-issuer">Linux</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="skills">
+  <div class="wrap">
+    <div class="section-head reveal"><h2>Technical skills</h2><span class="section-index mono">03</span></div>
+
+    <div class="skill-block reveal">
+      <div class="skill-cat">AZURE<span class="rule"></span></div>
+      <div class="chip-row">
+        <span class="chip">VNet</span><span class="chip">Subnets</span><span class="chip">NSG</span><span class="chip">VPN Gateway</span><span class="chip">Virtual Machines</span><span class="chip">Storage Accounts</span><span class="chip">Azure SQL Server</span><span class="chip">Azure Container Registry</span><span class="chip">Microsoft Entra ID</span>
+      </div>
+    </div>
+
+    <div class="skill-block reveal">
+      <div class="skill-cat">AWS<span class="rule"></span></div>
+      <div class="chip-row">
+        <span class="chip">EC2</span><span class="chip">S3</span><span class="chip">IAM</span><span class="chip">VPC</span><span class="chip">RDS</span><span class="chip">Route 53</span><span class="chip">CloudWatch</span><span class="chip">CloudTrail</span><span class="chip">Lambda</span><span class="chip">CloudFront</span><span class="chip">API Gateway</span><span class="chip">EventBridge</span><span class="chip">SNS</span><span class="chip">SQS</span><span class="chip">AWS MGN</span><span class="chip">AWS Backup</span><span class="chip">Trusted Advisor</span>
+      </div>
+    </div>
+
+    <div class="skill-block reveal">
+      <div class="skill-cat">NETWORKING<span class="rule"></span></div>
+      <div class="chip-row">
+        <span class="chip">VPC / VNet</span><span class="chip">Route Tables</span><span class="chip">NAT Gateway</span><span class="chip">Security Groups</span><span class="chip">NSGs</span><span class="chip">S2S VPN</span><span class="chip">P2S VPN</span><span class="chip">VPN Gateway</span><span class="chip">Transit Gateway</span>
+      </div>
+    </div>
+
+    <div class="skill-block reveal">
+      <div class="skill-cat">DEVOPS / IaC<span class="rule"></span></div>
+      <div class="chip-row">
+        <span class="chip">Git</span><span class="chip">GitHub</span><span class="chip">GitHub Actions</span><span class="chip">Jenkins</span><span class="chip">Docker</span><span class="chip">Terraform</span><span class="chip">CloudFormation</span><span class="chip">Ansible</span>
+      </div>
+    </div>
+
+    <div class="skill-block reveal">
+      <div class="skill-cat">MONITORING & SECURITY<span class="rule"></span></div>
+      <div class="chip-row">
+        <span class="chip">CloudWatch</span><span class="chip">Azure Monitor</span><span class="chip">Nagios</span><span class="chip">Prometheus</span><span class="chip">Grafana</span><span class="chip">KMS</span><span class="chip">Security Hub</span><span class="chip">GuardDuty</span><span class="chip">MFA</span>
+      </div>
+    </div>
+
+    <div class="skill-block reveal">
+      <div class="skill-cat">FINOPS & AI SERVICES<span class="rule"></span></div>
+      <div class="chip-row">
+        <span class="chip">Cost Explorer</span><span class="chip">Budgets</span><span class="chip">Rightsizing</span><span class="chip">Reserved Instances</span><span class="chip">Savings Plans</span><span class="chip">Spot Instances</span><span class="chip">SageMaker</span><span class="chip">Amazon Bedrock</span><span class="chip">Amazon Q</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="experience">
+  <div class="wrap">
+    <div class="section-head reveal"><h2>Experience</h2><span class="section-index mono">04</span></div>
+
+    <div class="timeline" id="timeline">
+      <div class="timeline-fill" id="timelineFill"></div>
+
+      <div class="job reveal">
+        <div class="job-head"><span class="job-role">Cloud Engineer</span><span class="job-period mono">Jun 2026 — Present</span></div>
+        <div class="job-org">Ekkam BizTech Pvt. Ltd. · Chennai, Tamil Nadu</div>
+        <ul>
+          <li>Manage AWS and Azure infrastructure across customer environments — provisioning, application deployment, monitoring, security, backup, and production operations.</li>
+          <li>Architect cloud solutions from customer requirements and act as technical point of contact for infrastructure, deployment, networking, and troubleshooting.</li>
+          <li>Provision Azure VNet, subnets, NSGs, Virtual Machines, Microsoft SQL Server, backup, and monitoring across UAT and Production.</li>
+          <li>Implement Azure S2S and P2S VPN Gateway connectivity, including network planning, routing, and secure access.</li>
+          <li>Deploy and troubleshoot applications across cloud environments, and mentor trainees on cloud infrastructure and Linux fundamentals.</li>
+        </ul>
+      </div>
+
+      <div class="job reveal">
+        <div class="job-head"><span class="job-role">Associate Cloud Engineer</span><span class="job-period mono">Aug 2024 — Jun 2026</span></div>
+        <div class="job-org">JIT Global Infosystems · Chennai, Tamil Nadu</div>
+        <ul>
+          <li>Managed AWS infrastructure across 15+ customer accounts, maintaining 99%+ uptime through proactive CloudWatch and Nagios monitoring, alarm tuning, and rapid incident response.</li>
+          <li>Owned AWS design and delivery across EC2, VPC, IAM, S3, Lambda, CloudFront, Route 53, RDS, CloudWatch, SNS, SQS, and EventBridge, aligned to the AWS Well-Architected Framework.</li>
+          <li>Built Python and Boto3 automation for infrastructure reporting, IAM auditing, CloudTrail analytics, and security-group reviews — cutting manual operations and audit overhead by 40%.</li>
+          <li>Automated routine cloud administration, removing roughly 4 hours/week of repetitive manual work across multi-account environments.</li>
+          <li>Built operational dashboards for customer-facing infrastructure health and anomalies, reducing anomaly detection time (MTTD) by 30%.</li>
+          <li>Delivered an internal AWS reporting platform covering security posture, resource utilization, cost trends, and operational health, replacing manual reporting.</li>
+          <li>Conducted infrastructure assessments and IAM governance reviews across customer environments, remediating risks across IAM, KMS, CloudTrail, and security groups.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="projects">
+  <div class="wrap">
+    <div class="section-head reveal"><h2>Key projects</h2><span class="section-index mono">05</span></div>
+
+    <div class="project-grid reveal-stagger">
+      <div class="project">
+        <div class="project-title">Azure infrastructure & network architecture</div>
+        <div class="stack-row">VNet<span class="divider">/</span>VPN Gateway<span class="divider">/</span>NSG<span class="divider">/</span>Azure SQL<span class="divider">/</span>Backup</div>
+        <ul>
+          <li>Planned and provisioned Azure infrastructure across UAT and Production — VNet, subnets, NSGs, VMs, managed SQL Server, backup, and monitoring.</li>
+          <li>Implemented S2S and P2S VPN Gateway connectivity for secure remote access and hybrid connectivity, including routing and network config.</li>
+        </ul>
+      </div>
+
+      <div class="project">
+        <div class="project-title">Enterprise AWS landing zone & Transit Gateway</div>
+        <div class="stack-row">AWS Organizations<span class="divider">/</span>Transit Gateway<span class="divider">/</span>VPC<span class="divider">/</span>IAM</div>
+        <ul>
+          <li>Designed centralized networking for a 15-account enterprise customer using Transit Gateway for scalable inter-account VPC connectivity.</li>
+          <li>Supported landing-zone architecture: account structure, centralized networking, security controls, routing, and governance.</li>
+        </ul>
+      </div>
+
+      <div class="project">
+        <div class="project-title">Enterprise Bank Integration System (BIS)</div>
+        <div class="stack-row">SFTP<span class="divider">/</span>S3<span class="divider">/</span>Lambda<span class="divider">/</span>EventBridge<span class="divider">/</span>SNS<span class="divider">/</span>API Gateway</div>
+        <ul>
+          <li>Built an automated bank-file integration platform serving 10 banks, securely fetching and processing 1,000+ files via SFTP into S3.</li>
+          <li>Automated scheduled fetching, validation, retry, escalation, and notification workflows, cutting manual operational effort.</li>
+          <li>Developed a customer-facing dashboard for bank-wise file status, availability, retries, and escalation visibility.</li>
+        </ul>
+      </div>
+
+      <div class="project">
+        <div class="project-title">AWS backup & disaster recovery</div>
+        <div class="stack-row">AWS Backup<span class="divider">/</span>RDS<span class="divider">/</span>S3<span class="divider">/</span>Lambda<span class="divider">/</span>CloudWatch</div>
+        <ul>
+          <li>Implemented automated backup and recovery workflows using AWS Backup, RDS snapshots, S3, Lambda, and CloudWatch.</li>
+          <li>Designed recovery targeting a 1-hour RTO and 15-minute RPO, with monitoring and alerting on backup operations.</li>
+        </ul>
+      </div>
+
+      <div class="project">
+        <div class="project-title">On-premises to AWS cloud migration</div>
+        <div class="stack-row">AWS MGN<span class="divider">/</span>EC2<span class="divider">/</span>VPC<span class="divider">/</span>RDS<span class="divider">/</span>IAM</div>
+        <ul>
+          <li>Migrated on-premises workloads to AWS using Application Migration Service (MGN) for minimal downtime and high availability.</li>
+          <li>Configured EC2, VPC, security groups, and IAM, with post-migration validation, performance tuning, DR, and cost optimization.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="education">
+  <div class="wrap reveal">
+    <div class="section-head"><h2>Education</h2><span class="section-index mono">06</span></div>
+    <div class="edu-row">
+      <div><div class="edu-name">B.E., Computer Science and Engineering</div><div class="edu-sub">Jeppiaar Institute of Technology, Chennai · CGPA 8.0 / 10</div></div>
+      <div class="edu-period">2020 — 2024</div>
+    </div>
+  </div>
+</section>
+
+<section id="achievements">
+  <div class="wrap">
+    <div class="section-head reveal"><h2>Achievements</h2><span class="section-index mono">07</span></div>
+    <div class="ach-list reveal-stagger">
+      <div class="ach-item"><span class="mk">›</span>Best Employee Award for Exceptional Performance — JIT Global Infosystems</div>
+      <div class="ach-item"><span class="mk">›</span>Token of Appreciation for achieving Microsoft Certification — Ekkam BizTech Pvt. Ltd.</div>
+      <div class="ach-item"><span class="mk">›</span>Extra & Co-Curricular Achiever Award, 2022–2024 — Jeppiaar Institute of Technology</div>
+      <div class="ach-item"><span class="mk">›</span>Basketball Award, 2024 — Jeppiaar Institute of Technology</div>
+    </div>
+  </div>
+</section>
+
+<footer id="contact">
+  <div class="wrap reveal">
+    <div class="footer-cta">Open to cloud engineering opportunities.</div>
+    <div class="footer-links">
+      <a href="mailto:sanjaythanigai12@gmail.com">Email →</a>
+      <a href="tel:+917539988018">Call →</a>
+      <a href="https://linkedin.com/in/sanjay-thanigai" target="_blank" rel="noopener">LinkedIn →</a>
+    </div>
+    <div class="footer-meta">Sanjay T — Chennai, Tamil Nadu</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Scroll progress bar
+  var progress = document.getElementById('scrollProgress');
+  function updateProgress(){
+    var h = document.documentElement;
+    var scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+    progress.style.width = scrolled + '%';
+  }
+  document.addEventListener('scroll', updateProgress, { passive: true });
+  updateProgress();
+
+  // Typewriter role line
+  var roleText = 'Cloud engineer building and operating {{AWS}} and {{AZURE}} infrastructure — networking, automation, security, and production reliability across multi-account environments.';
+  var roleEl = document.getElementById('roleLine');
+  function renderPartial(str){
+    return str
+      .replace(/\{\{AWS\}\}/g, '<span class="aws">AWS</span>')
+      .replace(/\{\{AZURE\}\}/g, '<span class="azure">Azure</span>');
+  }
+  if(reduceMotion){
+    roleEl.innerHTML = renderPartial(roleText);
+  } else {
+    var plain = roleText.replace(/\{\{AWS\}\}/g,'AWS').replace(/\{\{AZURE\}\}/g,'Azure');
+    var i = 0;
+    roleEl.innerHTML = '<span class="type-cursor"></span>';
+    setTimeout(function typeStep(){
+      i++;
+      var chunk = plain.slice(0, i);
+      // reinsert tag spans for AWS/Azure once fully typed past their position
+      var withTags = chunk
+        .replace('AWS', '<span class="aws">AWS</span>')
+        .replace('Azure', '<span class="azure">Azure</span>');
+      roleEl.innerHTML = withTags + '<span class="type-cursor"></span>';
+      if(i < plain.length){
+        setTimeout(typeStep, 14);
+      }
+    }, 900);
+  }
+
+  // Counter animation
+  function animateCounter(el){
+    var target = parseFloat(el.getAttribute('data-target'));
+    var suffix = el.getAttribute('data-suffix') || '';
+    var dur = 1200;
+    var start = null;
+    function step(ts){
+      if(!start) start = ts;
+      var progressRatio = Math.min((ts - start) / dur, 1);
+      var eased = 1 - Math.pow(1 - progressRatio, 3);
+      var val = Math.round(target * eased);
+      el.textContent = val + suffix;
+      if(progressRatio < 1) requestAnimationFrame(step);
+    }
+    if(reduceMotion){
+      el.textContent = target + suffix;
+    } else {
+      requestAnimationFrame(step);
+    }
+  }
+
+  // IntersectionObserver for reveals + counters + timeline dots
+  var revealEls = document.querySelectorAll('.reveal, .reveal-stagger, .job');
+  var counters = document.querySelectorAll('.stat-num');
+  var countersFired = false;
+
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        entry.target.classList.add('in-view');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2 });
+  revealEls.forEach(function(el){ io.observe(el); });
+
+  var statObserver = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting && !countersFired){
+        countersFired = true;
+        counters.forEach(animateCounter);
+        statObserver.disconnect();
+      }
+    });
+  }, { threshold: 0.4 });
+  var statStrip = document.querySelector('.stat-strip');
+  if(statStrip) statObserver.observe(statStrip);
+
+  // Timeline fill on scroll
+  var timeline = document.getElementById('timeline');
+  var timelineFill = document.getElementById('timelineFill');
+  function updateTimelineFill(){
+    if(!timeline) return;
+    var rect = timeline.getBoundingClientRect();
+    var vh = window.innerHeight;
+    var total = rect.height;
+    var visibleTop = vh * 0.75;
+    var progressPx = visibleTop - rect.top;
+    var pct = Math.max(0, Math.min(1, progressPx / total));
+    timelineFill.style.height = (pct * 100) + '%';
+  }
+  document.addEventListener('scroll', updateTimelineFill, { passive: true });
+  updateTimelineFill();
+
+  // Scroll spy nav
+  var navLinks = document.querySelectorAll('.nav-links a');
+  var sections = ['experience','projects','skills','contact'].map(function(id){ return document.getElementById(id); });
+  function updateSpy(){
+    var pos = window.scrollY + 140;
+    var current = null;
+    sections.forEach(function(sec){
+      if(sec && sec.offsetTop <= pos) current = sec.id;
+    });
+    navLinks.forEach(function(link){
+      link.classList.toggle('active', link.getAttribute('data-section') === current);
+    });
+  }
+  document.addEventListener('scroll', updateSpy, { passive: true });
+  updateSpy();
+})();
+</script>
+
+</body>
+</html>
